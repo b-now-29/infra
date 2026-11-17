@@ -5,7 +5,7 @@
 | 주소 | 넘기는 곳 | 저장소 |
 |---|---|---|
 | `{$DOMAIN}` | `app:8080`, `/java-quiz/*`는 `~/app/static` | `b-now-29/app` |
-| `stadium.{$DOMAIN}` | `stadium:8080` (WebSocket 포함) | `b-now-29/zipgwan` |
+| `stadium.{$DOMAIN}` | `stadium:8080` (WebSocket 포함), `/privacy`는 이 저장소의 `static/stadium/privacy.html` | `b-now-29/zipgwan` |
 
 - 앱 compose는 각자의 서비스를 외부 Docker 네트워크 `edge`에 붙인다. Caddy는 서비스 이름으로 찾는다. DB는 `edge`에 붙이지 않는다.
 - 인증서는 `app_caddy_data`·`app_caddy_config` volume에 있다(예전 `app` compose가 만든 이름 그대로). 지우면 재발급되고 그동안 HTTPS가 멈춘다.

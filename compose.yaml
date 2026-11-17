@@ -13,6 +13,8 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # /java-quiz 정적 파일. b-now-29/app 서버 폴더(~/app/static)를 그대로 쓴다.
       - ../app/static:/srv/static:ro
+      # 스타디움 정적 파일(개인정보처리방침). 이 저장소의 static/stadium을 workflow가 ~/infra/static/stadium에 복사한다.
+      - ./static/stadium:/srv/stadium:ro
       - caddy_data:/data        # 인증서 저장 (지우면 재발급됨)
       - caddy_config:/config
     networks:
