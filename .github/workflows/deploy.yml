@@ -1,0 +1,43 @@
+name: Deploy
+
+# main에 push하면 Caddy 설정을 서버에 복사하고 다시 읽게 한다.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      # Caddyfile 문법을 서버에 올리기 전에 확인한다.
+      - name: Caddyfile 검사
+        run: docker run --rm -e DOMAIN=example.com -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+      - name: 서버에 배포
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+          ssh ec2-user@"$HOST" "mkdir -p ~/infra"
+          scp compose.yaml Caddyfile ec2-user@"$HOST":~/infra/
+          # 처음 한 번은 README의 전환 절차대로 손으로 올린다. 그 전에는 파일만 복사하고 끝낸다
+          # (기존 app의 Caddy가 80/443을 쥐고 있어 새 Caddy가 뜰 수 없다).
+          ssh ec2-user@"$HOST" "docker network create edge >/dev/null 2>&1 || true; cd ~/infra \
+            && if [ -n \"\$(docker compose ps --status running -q caddy)\" ]; then \
+                 docker compose up -d && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile; \
+               else echo '새 Caddy가 아직 떠 있지 않아 파일만 복사했습니다. README의 전환 절차를 따르세요.'; fi"
