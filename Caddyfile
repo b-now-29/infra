@@ -29,6 +29,13 @@
 stadium.{$DOMAIN} {
 	encode zstd gzip
 
+	# 개인정보처리방침(zipgwan I04). 이 저장소의 static/stadium/privacy.html. 스타디움 서버가 꺼져 있어도 열린다.
+	handle /privacy {
+		root * /srv/stadium
+		rewrite * /privacy.html
+		file_server
+	}
+
 	reverse_proxy stadium:8080 {
 		# 배포로 재시작하는 동안 최대 30초까지 0.5초 간격으로 재시도
 		lb_try_duration 30s

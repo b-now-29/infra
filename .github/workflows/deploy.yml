@@ -35,6 +35,7 @@ jobs:
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
           ssh ec2-user@"$HOST" "mkdir -p ~/infra"
           scp compose.yaml Caddyfile ec2-user@"$HOST":~/infra/
+          scp -r static ec2-user@"$HOST":~/infra/
           # 처음 한 번은 README의 전환 절차대로 손으로 올린다. 그 전에는 파일만 복사하고 끝낸다
           # (기존 app의 Caddy가 80/443을 쥐고 있어 새 Caddy가 뜰 수 없다).
           ssh ec2-user@"$HOST" "docker network create edge >/dev/null 2>&1 || true; cd ~/infra \
